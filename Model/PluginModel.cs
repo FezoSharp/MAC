@@ -75,7 +75,8 @@ namespace MAC.Model
             Menu.AddSubMenu(extraMenu);
 
             var itemMenu = new Menu("Items and Summoners", "Items");
-            ItemHandler.AddToMenu(itemMenu);
+            itemMenu.AddItem(new MenuItem("BotrkC", "Use Botrk").SetValue(true));
+            itemMenu.AddItem(new MenuItem("YoumuuC", "Use Youmuu").SetValue(true));
             Menu.AddSubMenu(itemMenu);
 
 
@@ -141,6 +142,14 @@ namespace MAC.Model
 
         public virtual void Drawings(Menu config)
         {
+        }
+
+        public virtual void UseItem(int id, Obj_AI_Hero target = null)
+        {
+            if (Items.HasItem(id) && Items.CanUseItem(id))
+            {
+                Items.UseItem(id, target);
+            }
         }
 
         public virtual void OnAfterAttack(AttackableUnit unit, AttackableUnit target)

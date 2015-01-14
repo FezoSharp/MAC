@@ -64,7 +64,6 @@
     <Compile Include="Controller\IgniteHandler.cs" />
     <Compile Include="Controller\PotionHandler.cs" />
     <Compile Include="Model\PluginModel.cs" />
-    <Compile Include="Controller\ItemHandler.cs" />
     <Compile Include="Model\Utilitario.cs" />
     <Compile Include="Plugin\Mordekaiser.cs" />
     <Compile Include="Plugin\Vayne.cs" />

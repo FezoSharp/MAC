@@ -107,6 +107,14 @@ namespace MAC.Plugin
                 {
                     R.Cast();
                 }
+                
+                UseItem(3142
+
+
+                if ((Player.Health / Player.MaxHealth) * 100 < (target.Health / target.MaxHealth) * 100)
+                {
+                    UseItem(3153, target);
+                }
 
                 if (stackCount == 2 && !lastObjectAttacked.IsDead && lastObjectAttacked.Type == GameObjectType.obj_AI_Hero)
                 {

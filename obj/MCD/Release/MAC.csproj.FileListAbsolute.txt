@@ -1,0 +1,3 @@
+C:\Users\GabrielMiranda\Documents\GitHub\MAC\MAC\obj\MCD\Release\MAC.csprojResolveAssemblyReference.cache
+C:\Users\GabrielMiranda\Documents\GitHub\MAC\MAC\obj\MCD\Release\MAC.Properties.Resources.resources
+C:\Users\GabrielMiranda\Documents\GitHub\MAC\MAC\obj\MCD\Release\MAC.csproj.GenerateResource.Cache
