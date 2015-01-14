@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MAC.Controller
 {
-    internal class IgniteHandler : Utilitario
+    internal class ItemHandler : Utilitario
     {
         private const int IgniteRange = 600;
         private SpellSlot _igniteSlot;

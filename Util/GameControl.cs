@@ -10,7 +10,7 @@ namespace MAC.Util
 {
     class GameControl
     {
-        public static String version = "1 Revision 2";
+        public static String version = "2 Revision 1";
         public static Obj_AI_Hero MyHero = ObjectManager.Player;
 
         public static void LoadPlugin()

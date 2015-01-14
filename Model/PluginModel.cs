@@ -65,6 +65,10 @@ namespace MAC.Model
             Harass(harassMenu);
             Menu.AddSubMenu(harassMenu);
 
+            var laneclearMenu = new Menu("LaneClear", "macLaneclear");
+            Laneclear(laneclearMenu);
+            Menu.AddSubMenu(laneclearMenu);
+
             var miscMenu = new Menu("Misc", "macMisc");
             miscMenu.AddItem(new MenuItem("packets", "Use packets").SetValue(true));
             Misc(miscMenu);
@@ -75,7 +79,7 @@ namespace MAC.Model
             Menu.AddSubMenu(extraMenu);
 
             var itemMenu = new Menu("Items and Summoners", "Items");
-            itemMenu.AddItem(new MenuItem("BotrkC", "Use Botrk").SetValue(true));
+            itemMenu.AddItem(new MenuItem("BotrkC", "Use Botrk / Bilgewater").SetValue(true));
             itemMenu.AddItem(new MenuItem("YoumuuC", "Use Youmuu").SetValue(true));
             Menu.AddSubMenu(itemMenu);
 
@@ -83,7 +87,7 @@ namespace MAC.Model
             if (Player.GetSpellSlot("SummonerDot") != SpellSlot.Unknown)
             {
                 var igniteMenu = new Menu("Ignite/Incendiar", "macIgnite");
-                new IgniteHandler().Load(igniteMenu);
+                new ItemHandler().Load(igniteMenu);
                 Menu.AddSubMenu(igniteMenu);
             }
 
@@ -128,6 +132,10 @@ namespace MAC.Model
         {
         }
 
+        public virtual void Laneclear(Menu config)
+        {
+        }
+
         public virtual void ItemMenu(Menu config)
         {
         }
@@ -150,6 +158,11 @@ namespace MAC.Model
             {
                 Items.UseItem(id, target);
             }
+        }
+
+        public virtual bool CanUseItem(int id)
+        {
+            return Items.HasItem(id) && Items.CanUseItem(id);
         }
 
         public virtual void OnAfterAttack(AttackableUnit unit, AttackableUnit target)

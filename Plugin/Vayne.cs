@@ -49,9 +49,14 @@ namespace MAC.Plugin
             var drawE = GetBool("drawE");
             var comboTypeIndex = Menu.Item("comboType").GetValue<StringList>().SelectedIndex;
 
+            var target = TargetSelector.GetTarget(1000, TargetSelector.DamageType.Physical);
+
             var wts = Drawing.WorldToScreen(Player.Position);
 
             var p = Player.Position;
+
+            if (GetBool("disableAll"))
+                return;
 
             if (drawQ)
                 Utility.DrawCircle(p, Q.Range, Q.IsReady() ? System.Drawing.Color.Aqua : System.Drawing.Color.Red);
@@ -59,20 +64,24 @@ namespace MAC.Plugin
             if (drawE)
                 Utility.DrawCircle(p, E.Range, E.IsReady() ? System.Drawing.Color.Aqua : System.Drawing.Color.Red);
 
-            switch (comboTypeIndex)
+            if (GetBool("drawComboType"))
+                switch (comboTypeIndex)
+                {
+                    case 0:
+                        Drawing.DrawText(wts[0] - 35, wts[1] + 10, System.Drawing.Color.White, "Manual Combo Selected");
+                        break;
+                    case 1:
+                        Drawing.DrawText(wts[0] - 35, wts[1] + 10, System.Drawing.Color.Red, "Advanced Combo Selected");
+                        break;
+                    case 2:
+                        Drawing.DrawText(wts[0] - 35, wts[1] + 10, System.Drawing.Color.Gold, "OMG GOSU o.O");
+                        break;
+                }
+
+            if (GetBool("drawCondemnPosition"))
             {
-                case 0:
-                    Drawing.DrawText(wts[0] - 35, wts[1] + 10, System.Drawing.Color.White, "Normal Combo Selected");
-                    break;
-                case 1:
-                    Drawing.DrawText(wts[0] - 35, wts[1] + 10, System.Drawing.Color.Red, "Advanced Combo Selected");
-                    break;
-                case 2:
-                    Drawing.DrawText(wts[0] - 35, wts[1] + 10, System.Drawing.Color.Gold, "OMG GOSU o.O");
-                    break;
-                default:
-                    Drawing.DrawText(wts[0] - 35, wts[1] + 10, System.Drawing.Color.White, "Normal Combo Selected");
-                    break;
+                var position = GetBestCondemnPosition(target);
+                Utility.DrawCircle(position, 80, System.Drawing.Color.White);
             }
 
         }
@@ -108,11 +117,13 @@ namespace MAC.Plugin
                     R.Cast();
                 }
 
-                UseItem(3142);
+                if (CanUseItem(3142) && Player.Distance(target.Position) < Player.AttackRange)
+                    UseItem(3142);
 
-
-                if ((Player.Health / Player.MaxHealth) * 100 < (target.Health / target.MaxHealth) * 100)
+                if ((Player.Health / Player.MaxHealth) * 100 < (target.Health / target.MaxHealth) * 100 && (CanUseItem(3153) || CanUseItem(3144)))
                 {
+                    UseItem(3144, target);
+
                     UseItem(3153, target);
                 }
 
@@ -129,10 +140,18 @@ namespace MAC.Plugin
                     }
                 }
 
+                if (Q.IsReady() && 
+                    stackCount == 2 && 
+                    !lastObjectAttacked.IsDead &&
+                    lastObjectAttacked.Type == GameObjectType.obj_AI_Hero && 
+                    target == lastObjectAttacked && 
+                    Q.InRange(target.Position))
+                {
+                    Q.Cast(target);
+                }
+
                 if (E.IsReady())
                 {
-                    Game.PrintChat(CondemnCheck(Player.Position, out target).ToString());
-
                     if (CondemnCheck(Player.Position, out target))
                     {
                         E.Cast(target);
@@ -150,17 +169,123 @@ namespace MAC.Plugin
                     }
                 }
             }
+
+            /* End of Gosu Mode */
+
+            /**
+             * Advanced Combo Mode 
+             */
+
+            if (comboTypeIndex == 1)
+            {
+
+                if (R.IsReady() && GetBool("comboR") && Player.Distance(target.Position) < Player.AttackRange && GetValue<Slider>("minEnemiesInRangeR").Value >= enemiesInRange(Player, Player.AttackRange))
+                {
+                    R.Cast();
+                }
+
+                if (CanUseItem(3142) && Player.Distance(target.Position) < Player.AttackRange)
+                    UseItem(3142);
+
+                if ((Player.Health / Player.MaxHealth) * 100 < (target.Health / target.MaxHealth) * 100 && (CanUseItem(3153) || CanUseItem(3144)))
+                {
+                    UseItem(3144, target);
+
+                    UseItem(3153, target);
+                }
+
+                if (stackCount == 2 && !lastObjectAttacked.IsDead && lastObjectAttacked.Type == GameObjectType.obj_AI_Hero)
+                {
+                    if (E.IsReady() && calcularDanoAtaque(target, false) > target.Health && E.InRange(target.Position) && GetBool("comboE"))
+                    {
+                        E.Cast(target);
+                    }
+                    else if (E.IsReady() && Q.IsReady() && calcularDanoAtaque(target, false) > target.Health && Player.Distance(target.Position) < E.Range + Q.Range && GetBool("comboE") && GetBool("comboQ"))
+                    {
+                        Q.Cast(target.Position);
+                        E.Cast(target);
+                    }
+                }
+
+                if (Q.IsReady() &&
+                    stackCount == 2 &&
+                    !lastObjectAttacked.IsDead &&
+                    lastObjectAttacked.Type == GameObjectType.obj_AI_Hero &&
+                    target == lastObjectAttacked &&
+                    Q.InRange(target.Position) && GetBool("comboQ"))
+                {
+                    Q.Cast(target);
+                }
+
+                if (E.IsReady() && GetBool("comboE"))
+                {
+                    if (CondemnCheck(Player.Position, out target))
+                    {
+                        E.Cast(target);
+                    }
+                    else
+                    {
+                        var postition = GetBestCondemnPosition(target);
+                        if (postition == null)
+                            return;
+
+                        if (Player.Distance(postition) <= Q.Range && Q.IsReady() && GetBool("comboQ"))
+                        {
+                            Q.Cast(postition);
+                        }
+                    }
+                }
+
+            }
+
+            /* End of Advanced Combo Mode */
+
+            /**
+             * Manual Combo Mode 
+             */
+
+            if (comboTypeIndex == 0)
+            {
+
+                if (E.IsReady() && GetBool("comboE"))
+                {
+                    if (CondemnCheck(Player.Position, out target))
+                    {
+                        E.Cast(target);
+                    }
+                }
+
+            }
+
+            /* End of Manual Combo Mode */
+
         }
 
         private void Harass()
         {
             var target = TargetSelector.GetTarget(1000, TargetSelector.DamageType.Physical);
 
+            if (E.IsReady() && GetBool("harassE") && CondemnCheck(Player.Position, out target))
+            {
+                E.Cast(target);
+            }
+
+        }
+
+        private void LaneClear()
+        {
+
+            var target = TargetSelector.GetTarget(1000, TargetSelector.DamageType.Physical);
+
+            if (E.IsReady() && GetBool("harassE") && CondemnCheck(Player.Position, out target))
+            {
+                E.Cast(target);
+            }
+
         }
 
         public override void OnAfterAttack(AttackableUnit unit, AttackableUnit target)
         {
-            var comboTypeIndex = Menu.Item("comboType").GetValue<StringList>().SelectedIndex;
             if (unit.IsMe)
             {
                 if (!target.IsDead)
@@ -181,16 +306,42 @@ namespace MAC.Plugin
                 }
             }
 
+            var comboTypeIndex = Menu.Item("comboType").GetValue<StringList>().SelectedIndex;
+
             if (OrbwalkerMode == Orbwalking.OrbwalkingMode.Combo)
             {
                 if (comboTypeIndex == 2 && Q.IsReady())
                 {
                     Q.Cast(Game.CursorPos);
-                }
-                if (GetBool("comboQ") && Q.IsReady())
+                }else if (comboTypeIndex < 2 && GetBool("comboQ") && Q.IsReady())
                 {
+                    Q.Cast(Game.CursorPos);
                 }
             }
+            else if (OrbwalkerMode == Orbwalking.OrbwalkingMode.Mixed)
+            {
+                if (GetBool("harassQ") && Q.IsReady())
+                {
+                    Q.Cast(Game.CursorPos);
+                }
+            }
+            else if (OrbwalkerMode == Orbwalking.OrbwalkingMode.LaneClear)
+            {
+                if (GetBool("laneClearQ") && Q.IsReady())
+                {
+                    Q.Cast(Game.CursorPos);
+                }
+            }
+        }
+
+        public int enemiesInRange(Obj_AI_Hero obj, float range)
+        {
+            var nearEnemies =
+                    ObjectManager.Get<Obj_AI_Hero>()
+                        .Where(x => x.IsEnemy)
+                        .Where(x => !x.IsDead)
+                        .Where(x => x.Distance(obj.Position) <= range);
+            return nearEnemies.Count();
         }
 
         public float calcularDanoAtaque(Obj_AI_Base target, bool autoAttack)
@@ -296,9 +447,9 @@ namespace MAC.Plugin
                 }
             }
 
-            var insecLinePos = Drawing.WorldToScreen(toPosition);
+            //var insecLinePos = Drawing.WorldToScreen(toPosition);
 
-            return V2E(fromPosition, target.Position, target.Distance(fromPosition) + 300).To3D();
+            return V2E(fromPosition, toPosition, target.Distance(fromPosition) + 300).To3D();
         }
 
         static Vector2 V2E(Vector3 from, Vector3 direction, float distance)
@@ -350,7 +501,6 @@ namespace MAC.Plugin
         public override void Combo(Menu config)
         {
             config.AddItem(new MenuItem("comboQ", "Use Q").SetValue(true));
-            config.AddItem(new MenuItem("comboW", "Use W").SetValue(true));
             config.AddItem(new MenuItem("comboE", "Use E").SetValue(true));
             config.AddItem(new MenuItem("comboR", "Use R").SetValue(true));
         }
@@ -358,18 +508,30 @@ namespace MAC.Plugin
         public override void Harass(Menu config)
         {
             config.AddItem(new MenuItem("harassQ", "Use Q").SetValue(true));
-            config.AddItem(new MenuItem("harassW", "Use W").SetValue(false));
             config.AddItem(new MenuItem("harassE", "Use E").SetValue(false));
+        }
+
+        public override void Laneclear(Menu config)
+        {
+            config.AddItem(new MenuItem("laneClearQ", "Use Q").SetValue(true));
         }
 
         public override void Misc(Menu config)
         {
             config.AddItem(new MenuItem("comboType", "Combo Type").SetValue(new StringList(new[] { "Normal", "Advanced", "Gosu" }, 2)));
+            config.AddItem(new MenuItem("condemnNextAuto", "Condemn on next Auto Attack").SetValue(false));
             config.AddItem(new MenuItem("minEnemiesInRangeR", "Min. enemies in range to cast Ultimate").SetValue(new Slider(2, 1, 5)));
         }
 
         public override void Extra(Menu config)
         {
+            var MiscMSubMenu = new Menu("Misc - Mana Manager", "MiscM");
+            {
+                MiscMSubMenu.AddItem(new MenuItem("saveMana", "% safe for Combo").SetValue(new Slider(50, 0, 100)));
+            }
+
+            config.AddSubMenu(MiscMSubMenu);
+
             var MiscCSubMenu = new Menu("Misc - Condemn", "MiscC");
             {
                 MiscCSubMenu.AddItem(new MenuItem("PushDistance", "E Push Dist").SetValue(new Slider(425, 400, 500)));
@@ -392,8 +554,11 @@ namespace MAC.Plugin
 
         public override void Drawings(Menu config)
         {
+            config.AddItem(new MenuItem("disableAll", "Disable All Drawings").SetValue(false));
             config.AddItem(new MenuItem("drawQ", "Draw Q").SetValue(true));
             config.AddItem(new MenuItem("drawE", "Draw E").SetValue(true));
+            config.AddItem(new MenuItem("drawComboType", "Draw Combo Type").SetValue(true));
+            config.AddItem(new MenuItem("drawCondemnPosition", "Show Best Condemn position").SetValue(true));
         }
     }
 }
