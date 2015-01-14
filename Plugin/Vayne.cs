@@ -184,10 +184,10 @@ namespace MAC.Plugin
                     R.Cast();
                 }
 
-                if (CanUseItem(3142) && Player.Distance(target.Position) < Player.AttackRange)
+                if (CanUseItem(3142) && Player.Distance(target.Position) < Player.AttackRange && GetBool("BotrkC"))
                     UseItem(3142);
 
-                if ((Player.Health / Player.MaxHealth) * 100 < (target.Health / target.MaxHealth) * 100 && (CanUseItem(3153) || CanUseItem(3144)))
+                if ((Player.Health / Player.MaxHealth) * 100 < (target.Health / target.MaxHealth) * 100 && (CanUseItem(3153) || CanUseItem(3144)) && GetBool("BotrkC"))
                 {
                     UseItem(3144, target);
 
