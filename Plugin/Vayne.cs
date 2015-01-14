@@ -114,7 +114,7 @@ namespace MAC.Plugin
                     {
                         E.Cast(target);
                     }
-                    else if (E.IsReady() && Q.IsReady() && calcularDanoAtaque(target, false) > target.Health && Player.Distance(target.Position) > E.Range + Q.Range)
+                    else if (E.IsReady() && Q.IsReady() && calcularDanoAtaque(target, false) > target.Health && Player.Distance(target.Position) < E.Range + Q.Range)
                     {
                         Q.Cast(target.Position);
                         E.Cast(target);
@@ -141,12 +141,7 @@ namespace MAC.Plugin
                         }
                     }
                 }
-
-                
-
             }
-
-            
         }
 
         private void Harass()
